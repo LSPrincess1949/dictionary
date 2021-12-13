@@ -1,8 +1,9 @@
 <style>
   body {
     margin: 0;
-    height: 100vh;
-    display: flex;
+    height: 50vh;
+/*     display: flex; */
+    background-repeat: no-repeat;
     justify-content: center;
     align-items: center;
     background-image: url(https://upload.wikimedia.org/wikipedia/commons/7/70/Topographic_Map_of_Bir_Tawil.png)
@@ -13,30 +14,94 @@
   }
 </style>
 
+
+
 <section>
   distance from center: <span class="dist">0</span>px
+  <canvas id="sketchpad" width="1200" height="1400"></canvas>
 </section>
 
 <script>
-  Math.distance = (p0, p1) => {
+let canvas, ctx
+let mouseX, mouseY, mouseDown = 0
+
+const center = {
+    x: 1000,
+    y: 425
+  }
+
+Math.distance = (p0, p1) => {
     const dx = p1.x - p0.x
     const dy = p1.y - p0.y
     return Math.sqrt(dx * dx + dy * dy)
   }
+
+function getMousePos(e) {
+  if (e.offsetX) {
+      mouseX = e.offsetX
+      mouseY = e.offsetY
+  }
+  else if (e.layerX) {
+      mouseX = e.layerX
+      mouseY = e.layerY
+  }
+ }
   
-  function move (e) {
-    const span = document.querySelector('.dist')
-    const center = {
-      x: window.innerWidth / 2,
-      y: window.innerHeight / 2
-    }
-    const mouse = {
-      x: e.clientX,
-      y: e.clientY
-    }
-    const d = Math.distance(center, mouse)
-    span.textContent = Math.round(d)
+function draw(ctx,x,y,size) {
+  ctx.fillStyle = "#FF0000"
+
+  ctx.arc(x, y, size, 0, 2 * Math.PI);
+  ctx.stroke();
+}
+
+// function clearCanvas(canvas,ctx) {
+//   ctx.clearRect(0, 0, canvas.width, canvas.height)
+// }
+
+function onMouseDown() {
+  mouseDown = 1
+  draw(ctx, mouseX, mouseY, 15)
+  const mouse = {
+    x: mouseX,
+    y: mouseY
   }
 
-  window.addEventListener('mousemove', move)
+  const d = Math.distance(center, mouse)
+  ctx.fillText(d.toFixed(2).toString()+'   '+mouseX.toString()+","+mouseY.toString(), mouseX, mouseY)
+  
+}
+
+function onMouseUp() {
+  mouseDown = 0
+}
+
+function onMouseMove(e) {
+  if (mouseDown === 1) {
+      draw(ctx, mouseX, mouseY, 4)
+  }
+  getMousePos(e)
+  const span = document.querySelector('.dist')
+  const mouse = {
+    x: mouseX,
+    y: mouseY
+  }
+  
+  const d = Math.distance(center, mouse)
+  span.textContent = Math.round(d)
+  
+}
+
+
+
+function init() {
+  
+    canvas = document.getElementById('sketchpad')
+    canvas.width = window.innerWidth
+  	canvas.height = window.innerHeight
+  	ctx = canvas.getContext('2d')
+    window.addEventListener('mousedown', onMouseDown, false)
+    window.addEventListener('mousemove', onMouseMove, false)
+    window.addEventListener('mouseup', onMouseUp, false)
+}
+init();
 </script>
